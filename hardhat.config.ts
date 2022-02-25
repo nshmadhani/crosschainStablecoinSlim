@@ -2,7 +2,7 @@ require('dotenv').config()
 
 import { HardhatUserConfig } from "hardhat/types";
 import "@nomiclabs/hardhat-waffle";
-import "hardhat-typechain";
+import '@typechain/hardhat' //  prev dependency is no longer maintained
 import "tsconfig-paths/register";
 import "@nomiclabs/hardhat-web3";
 
@@ -159,9 +159,10 @@ const config: HardhatUserConfig = {
     },
     hardhat: {
       forking: {
-        url: `https://rpc.ftm.tools`,
+        //url: `https://rpc.ftm.tools`,
         // url: `https://rpc.ftm.tools`,
         // url: 'https://polygon-rpc.com'
+        url: 'https://arb1.arbitrum.io/rpc'
       },
     }
   },

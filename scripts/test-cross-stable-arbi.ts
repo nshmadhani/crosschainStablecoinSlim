@@ -4,17 +4,20 @@ function sleep(ms:number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+const DECIMALS = 18;
+
+
 async function main() {
 
   const qiStablecoinFactory = await ethers.getContractFactory("crosschainQiStablecoinSlim");
   const wmaticFactory = await ethers.getContractFactory("WMATIC")
 
   const wmatic = await wmaticFactory.deploy(
-    "19000000000000000000000"
+    ethers.utils.parseUnits("19000") //19000
   );
 
   const mai = await wmaticFactory.deploy(
-    "10000000000000000000000000000000000000000000000000000"
+    ethers.utils.parseUnits("1000000") //1000000
   );
 
   const qiStablecoin = await qiStablecoinFactory.deploy(
@@ -34,13 +37,13 @@ async function main() {
 
   console.log('prefunding the vault so it has some mai');
 
-  await mai.transfer(qiStablecoin.address,"1000000000000000000000000000000");
+  await mai.transfer(qiStablecoin.address, ethers.utils.parseUnits("10000")); //10000
 
 
   console.log("account is: ", account);
   // 1. Pre-requisites
   console.log(`1a`)
-  await wmatic.approve(qiStablecoin.address, "19000000000000000000")
+  await wmatic.approve(qiStablecoin.address, ethers.utils.parseUnits("19")) // 19
 
   //await sleep(10000);
 
@@ -48,7 +51,7 @@ async function main() {
   // 2a - Create a vault
   console.log(`2a`)
   await qiStablecoin.createVault(); // vaultType 0
-  await qiStablecoin.createVault();
+  //await qiStablecoin.createVault();
   const vaultId = 0;
   const secondVaultId = 1;
 
@@ -58,7 +61,7 @@ async function main() {
   // 3a - Deposit
   console.log(`3a`)
   try {
-    await qiStablecoin.depositCollateral(vaultId, "10000000000");
+    await qiStablecoin.depositCollateral(vaultId, ethers.utils.parseUnits("1"));
   } catch (e) { 
     console.log(`qiStablecoin.depositCollateral failed with ${e}`)
   }
@@ -67,9 +70,9 @@ async function main() {
    // 3b - Borrow
   console.log(`3b`)
   try {
-    await qiStablecoin.borrowToken(vaultId, "23000000000000");
-    //const balance = await qiStablecoin.balanceOf(account);
-    //console.log(`Borrowed token, balance: ${balance.toString()}`)
+    await qiStablecoin.borrowToken(vaultId, ethers.utils.parseUnits("2.3"));
+    const balance = await qiStablecoin.balanceOf(account); //CHANGE: this would be the number of vauls and not balance 
+    console.log(`Borrowed token, balance: ${balance.toString()}`)
   } catch (e) { 
     console.log(`qiStablecoin.borrowToken failed with ${e}`)
   }
@@ -80,24 +83,21 @@ async function main() {
     var cdr = await qiStablecoin.checkCollateralPercentage(vaultId);
 
     console.log("CDR: ", cdr.toString() );
-
     await qiStablecoin.setMinCollateralRatio(140);
-
+    
     cdr = await qiStablecoin.checkLiquidation(vaultId);
-
     console.log("Liquidation?: ", cdr.toString() );
-
+    
     cdr = await qiStablecoin.checkExtract(vaultId);
-
+    
     console.log("Extract: ", cdr.toString() );
-
     cdr = await qiStablecoin.checkCost(vaultId);
 
     console.log("Cost: ", cdr.toString() );
 
     console.log("change min debt");
 
-    cdr = await qiStablecoin.setMinDebt("24000000000000");
+    cdr = await qiStablecoin.setMinDebt(ethers.utils.parseUnits("2.4"));
 
     cdr = await qiStablecoin.checkLiquidation(vaultId);
 
@@ -119,10 +119,13 @@ async function main() {
   // 3c - Repay
   console.log(`3c`)
   try {
-    await mai.approve(qiStablecoin.address, "19000000000000000000")
 
+    await mai.approve(qiStablecoin.address, "19000000000000000000")
+    let balance = await qiStablecoin.balanceOf(account);
+    console.log(balance)
     await qiStablecoin.payBackToken(vaultId, "1000");
-    const balance = await qiStablecoin.balanceOf(account);
+
+    balance = await qiStablecoin.balanceOf(account);
     console.log(`Repayed 1000 tokens, new balance: ${balance.toString()}`)
   } catch (e) { 
     console.log(`qiStablecoin.payBacktoken failed with ${e}`)

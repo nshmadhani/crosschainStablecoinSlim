@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20Detailed.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
-import "./interfaces/IPriceSourceAll.sol";
+import "./IPriceSourceAll.sol";
 
 import "./MyVaultV4.sol";
 
@@ -245,6 +245,9 @@ contract crosschainStablecoinSlim is ReentrancyGuard, VaultNFTv4 {
             isValidCollateral(vaultCollateral[vaultID], newDebt),
             "Borrow would put vault below minimum collateral percentage"
         );
+        console.log(newDebt);
+        console.log((vaultDebt[vaultID]).add(amount) >= minDebt);
+        console.log(minDebt);
 
         require(
             (vaultDebt[vaultID]).add(amount) >= minDebt, 
@@ -286,6 +289,7 @@ contract crosschainStablecoinSlim is ReentrancyGuard, VaultNFTv4 {
 
         totalBorrowed = totalBorrowed.sub(amount);
         emit PayBackToken(vaultID, amount, _closingFee);
+        
     }
 
     function getPaid() public nonReentrant {
